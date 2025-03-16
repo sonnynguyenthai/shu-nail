@@ -54,7 +54,7 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.883 0.071 67.64);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -86,7 +86,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.811 0.111 293.571);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -115,9 +115,47 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+
+
+/* Global CSS for dark gradient title */
+.gradient-title {
+  /* Adjust the font size as needed */
+  font-weight: bold;
+  /* Optional, depending on the desired font style */
+  background: linear-gradient(to right, #1a2a6c, #b21f1f, #fdbb2d);
+  /* Dark gradient with multiple colors */
+  /* Dark gradient colors */
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Global CSS for element with gradient background */
+.gradient-background {
+  background: linear-gradient(to right, #1a2a6c, #b21f1f, #fdbb2d);
+
+  /* Dark gradient background */
+}
+
+.hero-image-wrapper {
+  perspective: 1000px;
+}
+
+.hero-image {
+  /* transform: rotateX(20deg) scale(0.9) translateY(-50); */
+  transform: rotateX(15deg) scale(1);
+  transition: transform 0.5s ease-out;
+  will-change: transform;
+}
+
+.hero-image.scrolled {
+  transform: rotateX(0deg) scale(1) translateY(40px);
 }
