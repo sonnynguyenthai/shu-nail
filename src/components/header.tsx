@@ -19,14 +19,14 @@ import {
 import Image from 'next/image';
 export default async function Header() {
     return (
-        <header className="fixed top-0 w-full border-b bg-background backdrop-blur-md z-50 supports-[backdrop-filter]:gradient-background/50">
-            <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <header className="fixed top-0 w-full border-b bg-background backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background">
+            <nav className="container mx-auto px-4 h-20 flex items-center justify-between">
                 <Link href="/">
                     <Image
                         src={'/logoHeader.jpg'}
                         alt="Shu nails Logo"
-                        width={300}
-                        height={80}
+                        width={500}
+                        height={200}
                         className="h-12 py-1 w-auto object-contain"
                     />
                 </Link>
@@ -50,7 +50,7 @@ export default async function Header() {
                         {/* Growth Tools Dropdown */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button className="flex items-center gap-2">
+                                <Button className="flex items-center gap-2 gradient-background">
                                     <StarsIcon className="h-4 w-4" />
                                     <span className="hidden md:block">Growth Tools</span>
                                     <ChevronDown className="h-4 w-4" />

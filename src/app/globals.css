@@ -145,6 +145,8 @@
   /* Dark gradient background */
 }
 
+
+
 .hero-image-wrapper {
   perspective: 1000px;
 }
@@ -158,4 +160,14 @@
 
 .hero-image.scrolled {
   transform: rotateX(0deg) scale(1) translateY(40px);
+}
+
+/* image animation */
+.image-zoom {
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.image-zoom:hover {
+  transform: scale(1.1);
 }

@@ -1,5 +1,8 @@
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: ['randomuser.me'],  // Add randomuser.me here
+    domains: ["th.bing.com", "www.crestproperty.net.au", "randomuser.me", "www.pooletourism.com", "i.pinimg.com"],
   },
 };
+
+module.exports = nextConfig;

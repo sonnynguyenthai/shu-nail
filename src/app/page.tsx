@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,8 +14,10 @@ import { testimonial } from '@/data/testimonial';
 import { features } from '@/data/feature';
 import { faqs } from '@/data/fag';
 import { howItWorks } from '@/data/howItWorks';
+import { auth } from '@clerk/nextjs/server';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+
   return (
     <>
       <div className="grid-background"></div>
