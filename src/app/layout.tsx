@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from 'next-themes';
 import Header from '@/components/header';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
-
 const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Shu nails & Beauty',
@@ -17,6 +15,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>

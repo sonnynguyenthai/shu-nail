@@ -1,4 +1,4 @@
-import { Branch } from "@prisma/client";
+import { Branch, Service } from "@prisma/client";
 
 export const branches: Branch[] = [
     {
@@ -20,4 +20,78 @@ export const branches: Branch[] = [
         updatedAt: new Date(),
     }
 
+];
+export const services = [
+    {
+        id: "1a2b3c4d-1234-5678-9101-abcdefabcdef",
+        name: "Classic Manicure",
+        description: "A simple yet elegant manicure with nail shaping and cuticle care.",
+        price: 20.0,
+        imageUrl: "https://example.com/classic-manicure.jpg",
+        branchId: "branch-001",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: "2b3c4d5e-2234-5678-9101-bcdefabcdefa",
+        name: "Gel Manicure",
+        description: "Long-lasting gel polish with a glossy finish.",
+        price: 35.0,
+        imageUrl: "https://example.com/gel-manicure.jpg",
+        branchId: "branch-002",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: "3c4d5e6f-3234-5678-9101-cdefabcdefab",
+        name: "Acrylic Nails",
+        description: "Durable acrylic nail extensions with a natural look.",
+        price: 50.0,
+        imageUrl: "https://example.com/acrylic-nails.jpg",
+        branchId: "branch-003",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: "4d5e6f7g-4234-5678-9101-defabcdefabc",
+        name: "French Tips",
+        description: "Classic French manicure for a timeless look.",
+        price: 30.0,
+        imageUrl: "https://example.com/french-tips.jpg",
+        branchId: "branch-004",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: "5e6f7g8h-5234-5678-9101-efabcdefabcd",
+        name: "Spa Pedicure",
+        description: "A relaxing pedicure with exfoliation and moisturizing treatment.",
+        price: 40.0,
+        imageUrl: "https://example.com/spa-pedicure.jpg",
+        branchId: "branch-005",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: "6f7g8h9i-6234-5678-9101-fabcdefabcde",
+        name: "Nail Art",
+        description: "Custom hand-painted nail designs for a unique style.",
+        price: 45.0,
+        imageUrl: "https://example.com/nail-art.jpg",
+        branchId: "branch-006",
+        bookings: [],
+        reviews: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
 ];

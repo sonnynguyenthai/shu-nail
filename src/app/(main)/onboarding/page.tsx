@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 const OnBoardingPage = async () => {
     return (
         <main>
-            <div className="mt-25 mb-4 text-center">
+            <div className="mt-21 mb-4 text-center">
                 <div className="my-10">
                     <Button variant="ghost" size={"icon"} className='animate-bounce' disabled>
                         <MapPinHouse className="inline-block ml-2 text-xl w-20 h-20 text-primary" />

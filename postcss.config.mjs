@@ -38,6 +38,9 @@ const config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        gradient: {
+          DEFAULT: 'linear-gradient(to right, #1a2a6c, #b21f1f, #fdbb2d)',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

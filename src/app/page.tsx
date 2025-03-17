@@ -14,10 +14,8 @@ import { testimonial } from '@/data/testimonial';
 import { features } from '@/data/feature';
 import { faqs } from '@/data/fag';
 import { howItWorks } from '@/data/howItWorks';
-import { auth } from '@clerk/nextjs/server';
 
 export default async function LandingPage() {
-
   return (
     <>
       <div className="grid-background"></div>
