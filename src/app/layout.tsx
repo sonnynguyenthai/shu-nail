@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/header';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
+import { ReduxProvider } from '@/redux/redux.provider';
 const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Shu nails & Beauty',
@@ -20,11 +21,10 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <link rel="icon" sizes="any" />
         </head>
         <body className={`${inter.className}`}>
           <Header />
-          <main className="min-h-screen">{children}</main>
+          <main className="min-h-screen"><ReduxProvider>{children}</ReduxProvider></main>
           <Toaster richColors />
           <footer className="bg-secondary/50 py-12">
             <div className="container mx-auto px-4 text-center text-gray-700">

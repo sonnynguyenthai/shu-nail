@@ -2,7 +2,9 @@
 import React from 'react'
 import { services } from '@/data/fakeData'
 import Services from './_components/services'
+import Counter from './_components/counter'
 const BookingPage = () => {
+
     return (
         <div>
             <div>
@@ -18,6 +20,7 @@ const BookingPage = () => {
                     <Services title={"Best of month"} services={services} />
                 </div>
             </div>
+
         </div>
     )
 }

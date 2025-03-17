@@ -5,11 +5,10 @@ export const checkUser = async () => {
     if (!user) {
         return null;
     }
-
     try {
         const LoggedInUser = await db.user.findUnique({
             where: {
-                id: user.id,
+                clerkUserId: user.id,
             },
         });
         if (LoggedInUser) {
