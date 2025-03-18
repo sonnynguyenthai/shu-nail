@@ -1,34 +1,43 @@
-import { Card } from '@/components/ui/card'
-import React from 'react'
+"use client"
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import type { Branch } from '@prisma/client'
 import Link from 'next/link'
-const Branches = ({
-    branches
-}: { branches: Branch[] }) => {
+import { Branch } from '@prisma/client'
+import { useAppDispatch, useAppSelector } from '@/redux/hooks'
+import { setBranchBooking } from '@/redux/slices/branch.slice'
+import { useRouter } from 'next/navigation'
+
+const Branches = ({ branches }: { branches: Branch[] }) => {
+    const dispatch = useAppDispatch();
+    const router = useRouter()
+    const handleSelectBranch = (branch: Branch) => {
+        const selectedBranch = { ...branch, createdAt: branch.createdAt.toISOString(), updatedAt: branch.updatedAt.toISOString() }
+        dispatch(setBranchBooking(selectedBranch));
+        router.push("/booking")
+    }
     return (
-        <div className=' grid xs:grid-cols-2 xl:grid-cols-2 gap-10 '>
-            {branches.map(branch => (
-                <Link key={branch.id} href={"/booking"}>
-                    <div
-                        className='relative image-zoom'
-                    >
-                        <Image
-                            src={branch.imageUrl}
-                            width={700}
-                            height={350}
-                            alt="Dashboard Preview"
-                            className="rounded-lg shadow-2xl border mx-auto"
-                            priority
-                        />
-                        <div className='absolute top-[5%] left-[12%]'>
-                            <p className='text-xl font-extrabold text-white'>{branch.address}</p>
-                        </div>
+        <div className="grid xs:grid-cols-2 xl:grid-cols-2 gap-10">
+            {branches.map((branch) => (
+                <div key={branch.id} className="relative image-zoom" onClick={() => handleSelectBranch(branch)}>
+                    <Image
+                        src={branch.imageUrl}
+                        width={700}
+                        height={350}
+                        alt="Dashboard Preview"
+                        className="rounded-lg shadow-2xl border mx-auto"
+                        priority
+                    />
+                    <div className="absolute top-[2%] left-1/2 transform -translate-x-1/2 text-xl font-extrabold text-white text-center w-full">
+                        {branch.address}
                     </div>
-                </Link>
+                </div>
+
             ))}
         </div>
     )
 }
 
 export default Branches
+
+
+

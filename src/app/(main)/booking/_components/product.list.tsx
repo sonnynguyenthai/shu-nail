@@ -5,7 +5,7 @@ import { Service } from '@prisma/client'
 import React, { useEffect } from 'react'
 import Image from 'next/image'
 import { ChartNoAxesCombined } from 'lucide-react'
-const Services = ({ title = "", services }: { title: string, services: Service[] }) => {
+const ProductList = ({ title = "", services }: { title: string, services: Service[] }) => {
     return (
         <div className='p-6'>
             <div className='flex justify-between items-center'>
@@ -26,8 +26,6 @@ const Services = ({ title = "", services }: { title: string, services: Service[]
                             <Image
                                 src={'/bannerLanding.png'}
                                 alt="Shu nails Logo"
-                                width={500}
-                                height={300}
                                 className="h-12 py-1 h-full w-full rounded-xl"
                             />
                             <div>
@@ -43,7 +41,7 @@ const Services = ({ title = "", services }: { title: string, services: Service[]
                                 <p className='text-xs gradient-title' >View details</p>
                             </Button>
                             <Button className="gradient-background h-7 w-24 hover:animate-bounce" >
-                                Booking
+                                Add
                             </Button>
                         </CardFooter>
                     </Card>
@@ -53,4 +51,4 @@ const Services = ({ title = "", services }: { title: string, services: Service[]
     )
 }
 
-export default Services
+export default ProductList
