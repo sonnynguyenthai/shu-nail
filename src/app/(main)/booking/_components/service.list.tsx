@@ -16,7 +16,10 @@ const ServiceList = ({ title = "", services = [] }: { title: string, services: S
     const selectedBranch = useAppSelector(state => state.branch.selectedBranch);
     useEffect(() => {
         if (selectedBranch == null) {
-            router.push("/onboarding")
+            const branchIdSession = sessionStorage.getItem("branchId")
+            if (branchIdSession) {
+                dispatch(fetchServices(branchIdSession));
+            }
         }
     }, [selectedBranch])
     const selectedBranchId = selectedBranch?.id;
@@ -28,6 +31,10 @@ const ServiceList = ({ title = "", services = [] }: { title: string, services: S
             setServiceList(storeServices);
         }
     }, [dispatch, selectedBranchId, isLoading])
+
+    function handleClickExplore() {
+        router.push("/booking/category")
+    }
 
     return (
         <div className='p-6'>
@@ -70,7 +77,7 @@ const ServiceList = ({ title = "", services = [] }: { title: string, services: S
                                 </div>
                                 <div className='flex justify-between items-center mt-4'>
                                     <p className='text-xs xl:text-lg underline'>From only ${service.price}</p>
-                                    <Button className="gradient-background hover:animate-bounce w-30 " >
+                                    <Button className="gradient-background hover:animate-bounce w-30" onClick={() => handleClickExplore()} >
                                         Explore
                                     </Button>
                                 </div>

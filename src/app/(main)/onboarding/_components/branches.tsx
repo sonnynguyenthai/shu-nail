@@ -13,6 +13,11 @@ const Branches = ({ branches }: { branches: Branch[] }) => {
     const handleSelectBranch = (branch: Branch) => {
         const selectedBranch = { ...branch, createdAt: branch.createdAt.toISOString(), updatedAt: branch.updatedAt.toISOString() }
         dispatch(setBranchBooking(selectedBranch));
+        const branchIdSession = sessionStorage.getItem("branchId")
+        if (branchIdSession) {
+            sessionStorage.removeItem("branchId")
+        }
+        sessionStorage.setItem("branchId", selectedBranch?.id)
         router.push("/booking")
     }
     return (
@@ -31,7 +36,6 @@ const Branches = ({ branches }: { branches: Branch[] }) => {
                         {branch.address}
                     </div>
                 </div>
-
             ))}
         </div>
     )

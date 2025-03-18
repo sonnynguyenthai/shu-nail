@@ -20,7 +20,9 @@ export const branchSlice = createSlice({
     // The `reducers` field lets us define reducers and generate associated actions
     reducers: {
         setBranchBooking: (state, action) => {
-            state.selectedBranch = action.payload;
+            if (action.payload) {
+                state.selectedBranch = action.payload;
+            }
         },
     }
 });
