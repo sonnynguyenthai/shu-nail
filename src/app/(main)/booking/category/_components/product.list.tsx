@@ -22,7 +22,7 @@ const ProductList = ({ title = "", services }: { title: string, services: Servic
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6'>
                 {services.map((service) => (
                     <Card key={service.id} className="max-w-xs shadow-none h-[400px] justify-between">
-                        <CardContent className="text-[15px] text-muted-foreground">
+                        <CardContent className="text-[15px]  text-muted-foreground">
                             <Image
                                 src={'/bannerLanding.png'}
                                 alt="Shu nails Logo"
@@ -38,7 +38,7 @@ const ProductList = ({ title = "", services }: { title: string, services: Servic
                         </CardContent>
                         <CardFooter className='justify-center flex-wrap-reverse items-center'>
                             <Button className="h-7" variant="link">
-                                <p className='text-xs gradient-title' >View details</p>
+                                <p className='text-xs gradient-title'>View details</p>
                             </Button>
                             <Button className="gradient-background h-7 w-24 hover:animate-bounce" >
                                 Add
