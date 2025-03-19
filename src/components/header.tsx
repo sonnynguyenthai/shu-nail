@@ -1,21 +1,10 @@
 import React from 'react';
 import { Button } from './ui/button';
 import {
-    PenBox,
-    LayoutDashboard,
-    FileText,
-    GraduationCap,
-    ChevronDown,
-    StarsIcon,
+    ShoppingCart,
 } from 'lucide-react';
 import Link from 'next/link';
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/nextjs';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 export default async function Header() {
     return (
@@ -34,7 +23,7 @@ export default async function Header() {
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-2 md:space-x-4">
                     <SignedIn>
-                        <Link href="/dashboard">
+                        {/* <Link href="/dashboard">
                             <Button
                                 variant="outline"
                                 className="hidden md:inline-flex items-center gap-2"
@@ -45,10 +34,10 @@ export default async function Header() {
                             <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
                                 <LayoutDashboard className="h-4 w-4" />
                             </Button>
-                        </Link>
+                        </Link> */}
 
                         {/* Growth Tools Dropdown */}
-                        <DropdownMenu>
+                        {/* <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button className="flex items-center gap-2 gradient-background">
                                     <StarsIcon className="h-4 w-4" />
@@ -79,7 +68,23 @@ export default async function Header() {
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
-                        </DropdownMenu>
+                        </DropdownMenu> */}
+                    </SignedIn>
+
+                    <SignedIn>
+                        <div className='flex justify-between space-x-4'>
+                            <ShoppingCart className='w-6 h-6 cursor-pointer' />
+                            <UserButton
+                                appearance={{
+                                    elements: {
+                                        avatarBox: 'w-10 h-10',
+                                        userButtonPopoverCard: 'shadow-xl',
+                                        userPreviewMainIdentifier: 'font-semibold',
+                                    },
+                                }}
+                                afterSignOutUrl="/"
+                            />
+                        </div>
                     </SignedIn>
 
                     <SignedOut>
@@ -87,19 +92,6 @@ export default async function Header() {
                             <Button variant="outline">Sign In</Button>
                         </SignInButton>
                     </SignedOut>
-
-                    <SignedIn>
-                        <UserButton
-                            appearance={{
-                                elements: {
-                                    avatarBox: 'w-10 h-10',
-                                    userButtonPopoverCard: 'shadow-xl',
-                                    userPreviewMainIdentifier: 'font-semibold',
-                                },
-                            }}
-                            afterSignOutUrl="/"
-                        />
-                    </SignedIn>
                 </div>
             </nav>
         </header>

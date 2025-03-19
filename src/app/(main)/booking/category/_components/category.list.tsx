@@ -38,7 +38,7 @@ const CategoryList = () => {
                                                     height={400}
                                                     className="h-12 py-1 h-full w-full rounded-xl"
                                                 />
-                                                <div className=''>
+                                                <div className='mt-3'>
                                                     <h4 className='text-lg xl:text-xl text-primary/80 text-center font-extrabold mb-2'>{product.name}</h4>
                                                     {/* <div className="mt-5 w-full aspect-video bg-muted rounded-xl" /> */}
                                                     <div className=' max-h-[70px] text-xs text-center text-muted-foreground/50'>
