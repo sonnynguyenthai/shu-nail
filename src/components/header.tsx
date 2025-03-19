@@ -1,11 +1,16 @@
 import React from 'react';
 import { Button } from './ui/button';
 import {
+    AlignJustify,
     ShoppingCart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
+import { Label } from '@radix-ui/react-dropdown-menu';
+import { Input } from './ui/input';
+import { SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetClose, Sheet } from './ui/sheet';
+import AdminSheet from '@/app/(management)/admin/_components/admin.sheet';
 export default async function Header() {
     return (
         <header className="fixed top-0 w-full border-b bg-background backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background">
@@ -72,19 +77,18 @@ export default async function Header() {
                     </SignedIn>
 
                     <SignedIn>
-                        <div className='flex justify-between space-x-4'>
-                            <ShoppingCart className='w-6 h-6 cursor-pointer' />
-                            <UserButton
-                                appearance={{
-                                    elements: {
-                                        avatarBox: 'w-10 h-10',
-                                        userButtonPopoverCard: 'shadow-xl',
-                                        userPreviewMainIdentifier: 'font-semibold',
-                                    },
-                                }}
-                                afterSignOutUrl="/"
-                            />
-                        </div>
+                        <ShoppingCart className='w-6 h-6 cursor-pointer hover:w-8 h-8' />
+                        {/* <UserButton
+                            appearance={{
+                                elements: {
+                                    avatarBox: 'w-10 h-10',
+                                    userButtonPopoverCard: 'shadow-xl',
+                                    userPreviewMainIdentifier: 'font-semibold',
+                                },
+                            }}
+                            afterSignOutUrl="/"
+                        /> */}
+                        <AdminSheet />
                     </SignedIn>
 
                     <SignedOut>
