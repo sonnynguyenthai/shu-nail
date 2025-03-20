@@ -10,7 +10,7 @@ const AdminLayout = async ({
     const user = await checkUser();
     if (!user) return (<NotFoundPage />);
     return (
-        <div className='mt-28 p-8'>
+        <div className='mt-12 p-8'>
             {children}
         </div>
     )

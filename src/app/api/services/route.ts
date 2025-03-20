@@ -13,6 +13,7 @@ export async function GET() {
                 services
             }
         };
+
         return NextResponse.json(response, { status: 200 });
     } catch (error) {
         console.error(error);
@@ -33,10 +34,10 @@ export async function POST(request: Request) {
                 name,
                 description,
                 price,
-                imageUrl,
-                categories: {
-                    connect: categories?.map((categoryId: string) => ({ id: categoryId })) // Associating categories
-                }
+                imageUrl
+                // categories: {
+                //     connect: categories?.map((categoryId: string) => ({ id: categoryId })) // Associating categories
+                // }
             }
         });
 
@@ -91,8 +92,12 @@ export async function DELETE(request: Request) {
     try {
         const { id } = await request.json();
         await db.service.delete({ where: { id } });
-
-        return NextResponse.json({ message: "Service deleted successfully." }, { status: 200 });
+        const response: IBackendRes<null> = {
+            statusCode: 200,
+            message: "Service updated successfully.",
+            data: null
+        };
+        return NextResponse.json(response, { status: 200 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed to delete service' }, { status: 500 });

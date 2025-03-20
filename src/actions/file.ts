@@ -12,5 +12,5 @@ export const handleUploadFile = async (target: string, file: File) => {
         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/s3-upload`,
         body: formData
     });
-    return (process.env.NEXT_PUBLIC_AWS_S3_AVATAR_FOLDER ?? "") + resUploadFile.data?.fileName;
+    return `${process.env.NEXT_PUBLIC_AWS_S3_AVATAR_FOLDER ?? ""}${target.replace(/\/$/, "")}/${resUploadFile.data?.fileName}`;
 };

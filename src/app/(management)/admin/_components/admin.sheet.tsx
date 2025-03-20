@@ -1,32 +1,44 @@
 "use client"; // If using Next.js with App Router
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+import {
+    Sheet,
+    SheetTrigger,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { AlignJustify } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation"; // Use 'react-router-dom' if not using Next.js
-import path from "path";
-import { useEffect } from "react";
 
 const AdminSheet = () => {
-    const router = useRouter(); // Next.js navigation
-    const pathName = usePathname()
+    const [open, setOpen] = useState(false);
+    const router = useRouter();
+    const pathName = usePathname();
+
     useEffect(() => {
-        if (pathName === "admin") {
-            router.push("admin/user")
+        if (pathName === "/admin") {
+            router.push("/admin/user");
         }
-    }, [pathName])
+        setOpen(false); // Close sheet when path changes
+    }, [pathName, router]);
 
     const menuItems = [
-        { label: "Users", path: "user" },
-        { label: "Categories", path: "category" },
-        { label: "Products", path: "product" },
-        { label: "Services", path: "service" },
-        { label: "Branches", path: "branch" },
+        { label: "Users", path: "/admin/user" },
+        { label: "Categories", path: "/admin/category" },
+        { label: "Products", path: "/admin/product" },
+        { label: "Services", path: "/admin/service" },
+        { label: "Branches", path: "/admin/branch" },
     ];
 
     return (
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <AlignJustify className="cursor-pointer hover:w-8 h-8" />
+                <AlignJustify
+                    className="cursor-pointer hover:w-8 h-8"
+                    onClick={() => setOpen(true)}
+                />
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
                 <SheetHeader>
@@ -39,7 +51,10 @@ const AdminSheet = () => {
                             key={index}
                             variant="ghost"
                             className="justify-start text-left w-full"
-                            onClick={() => router.push(item.path)}
+                            onClick={() => {
+                                router.push(item.path);
+                                setOpen(false); // Close the sheet after clicking
+                            }}
                         >
                             {item.label}
                         </Button>

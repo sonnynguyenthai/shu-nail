@@ -6,10 +6,14 @@ const BookingPage = () => {
     return (
 
         <div>
-            <h1 className="text-2xl text-center font-bold md:text-3xl lg:text-4xl xl:text-5xl gradient-title animate-gradient">
-                Premium Services – Book Your Appointment Today!
-            </h1>
-            <div>
+            <div className='text-center mb-12'>
+                <h2 className='text-4xl md:text-5xl gradient-title font-bold mb-4'>
+                    Premium Services
+                </h2>
+                <p className='text-lg text-muted-foreground'>
+                    Book Your Appointment Today!
+                </p>
+
                 <ServiceList title={"Our Services"} services={[]} />
             </div>
         </div>

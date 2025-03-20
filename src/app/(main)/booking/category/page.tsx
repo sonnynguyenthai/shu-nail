@@ -4,10 +4,15 @@ import CategoryList from './_components/category.list'
 const CategoryPage = () => {
   return (
     <div className=''>
-      <h1 className="text-3xl  text-center font-extrabold text-gray-800  gradient-title">
-        Choose Your Styles at Shu Nails and Beauty
-      </h1>
-      <CategoryList />
+      <div className='text-center mb-12'>
+        <h2 className='text-4xl md:text-5xl gradient-title font-bold mb-4'>
+          Choose Your Styles
+        </h2>
+        <p className='text-lg text-muted-foreground'>
+          Shu nails & beauty
+        </p>
+        <CategoryList />
+      </div>
     </div>
   )
 }

@@ -21,7 +21,7 @@ const Branches = ({ branches }: { branches: Branch[] }) => {
         router.push("/booking")
     }
     return (
-        <div className="grid xs:grid-cols-2 xl:grid-cols-2 gap-10">
+        <div className="grid xs:grid-cols-2 xl:grid-cols-2 gap-10 opacity-0 animate-fadeIn">
             {branches.map((branch) => (
                 <div key={branch.id} className="relative image-zoom" onClick={() => handleSelectBranch(branch)}>
                     <Image
