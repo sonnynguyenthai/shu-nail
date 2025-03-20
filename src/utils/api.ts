@@ -28,7 +28,9 @@ export const sendRequest = async <T>(props: IRequest): Promise<T> => {
         const response = await axios(url, config);
         return response.data as T;
     } catch (error: any) {
+
         const errResponse = error.response;
+        console.error(errResponse?.data?.message ?? '');
         return {
             statusCode: errResponse?.status,
             message: errResponse?.data?.message ?? '',
@@ -63,6 +65,8 @@ export const sendRequestFile = async <T>(props: IRequest): Promise<T> => {
         return response.data as T;
     } catch (error: any) {
         const errResponse = error.response;
+        console.error(errResponse?.data?.message ?? '');
+
         return {
             statusCode: errResponse?.status,
             message: errResponse?.data?.message ?? '',

@@ -1,17 +1,14 @@
 // src/app/api/users/route.ts
-
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';  // Prisma client
 import { checkUser } from '@/actions/user';
-import { User } from '@prisma/client';
-
-
-
 
 // Update user (PUT)
 export async function PUT(request: Request) {
     try {
-        const { id, name, email, role } = await request.json();  // Get data from request body
+        const { id, location,
+            membershipLevel,
+            profileCompletion, ...userInfo } = await request.json();  // Get data from request body
         const user = await checkUser(); // Ensure the user is authenticated with Clerk
 
         if (!user) {
@@ -20,7 +17,7 @@ export async function PUT(request: Request) {
 
         const updatedUser = await db.user.update({
             where: { id },
-            data: { name, email, role },
+            data: userInfo
         });
 
         return NextResponse.json(updatedUser, { status: 200 });

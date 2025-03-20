@@ -9,9 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Bell, Camera, CreditCard, LogOut, Pencil, Settings, Shield } from "lucide-react";
-import { useState } from "react";
-import { User } from "@prisma/client";
+import { Bell, Camera, CreditCard, Loader2, LogOut, Pencil, Save, Settings, Shield } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Role, User } from "@prisma/client";
+import { sendRequest, sendRequestFile } from "@/utils/api";
+import { toast } from "sonner";
+import { handleUploadAvatar } from "@/actions/file";
 
 export default function UserDetails({ user }: { user: User }) {
     const [userInfo, setUserInfo] = useState({
@@ -20,7 +23,9 @@ export default function UserDetails({ user }: { user: User }) {
         membershipLevel: "Gold",
         profileCompletion: 85,
     });
-
+    const [file, setFile] = useState<File | null>();
+    const [isSaving, setIsSaving] = useState(false);
+    const avatarRef = useRef<HTMLInputElement>(null);
     const bookings = [
         {
             id: "1234",
@@ -61,6 +66,40 @@ export default function UserDetails({ user }: { user: User }) {
         }
     ];
 
+    function handleFileChange(file: File) {
+        if (!file) {
+            toast.error("Please select a file.");
+            return;
+        }
+        setFile(file);
+    }
+
+    const handleSaveChanges = async () => {
+        setIsSaving(true);
+        if (!file) {
+            toast.error("Please select a file.");
+            return;
+        }
+        const resUploadFile = await handleUploadAvatar(file);
+        if (resUploadFile) {
+            setUserInfo({ ...userInfo, imageUrl: resUploadFile });
+        } else {
+            toast.error("Failed to upload file. Please try again.");
+        }
+        const response = await sendRequest<IBackendRes<{ user: User }>>({
+            method: "PUT",
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users`,
+            body: userInfo
+        })
+        if (response.error) {
+            toast.error("Failed to update profile. Please try again.");
+            setIsSaving(false);
+            return;
+        }
+        toast.success("Profile updated successfully.");
+        setIsSaving(false);
+
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-4">
@@ -69,13 +108,20 @@ export default function UserDetails({ user }: { user: User }) {
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-6">
                         <div className="relative group">
-                            <Avatar className="h-32 w-32 ring-4 ring-purple-50">
-                                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop" />
+                            <Avatar className="h-32 w-32 ring-4 ring-purple-50" >
+                                <AvatarImage src={userInfo.imageUrl} />
                                 <AvatarFallback className="text-3xl">JS</AvatarFallback>
                             </Avatar>
-                            <Button size="icon" variant="outline" className="absolute bottom-2 right-2 rounded-full h-8 w-8 bg-white group-hover:bg-gray-50">
+                            <Button size="icon" variant="outline" onClick={() => avatarRef.current?.click()} className="absolute bottom-2 right-2 rounded-full h-8 w-8 bg-white group-hover:bg-gray-50">
                                 <Camera className="h-4 w-4" />
                             </Button>
+                            <Input
+                                ref={avatarRef}
+                                className="hidden"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
+                            />
                         </div>
                         <div>
                             <div className="flex items-center gap-3">
@@ -130,35 +176,49 @@ export default function UserDetails({ user }: { user: User }) {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Full Name</label>
-                                    <Input value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
+                                    <Input value={userInfo?.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <Input value={userInfo.email} onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
+                                    <Input value={userInfo?.email} onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Phone Number</label>
-                                    <Input value={userInfo.phone || ""} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
+                                    <Input value={userInfo?.phone || ""} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Role</label>
-                                    <Select value={userInfo.role}>
+                                    <Select
+                                        value={userInfo?.role}
+                                        onValueChange={(value) => setUserInfo({ ...userInfo, role: value as Role })}
+                                    >
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="customer">Customer</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                            <SelectItem value="manager">Manager</SelectItem>
+                                            <SelectItem value="CUSTOMER">Customer</SelectItem>
+                                            <SelectItem value="ADMIN">Admin</SelectItem>
+                                            <SelectItem value="EMPLOYEE">Employee</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Location</label>
-                                    <Input value={userInfo.location} onChange={(e) => setUserInfo({ ...userInfo, location: e.target.value })} />
+                                    <Input value={userInfo?.location} onChange={(e) => setUserInfo({ ...userInfo, location: e.target.value })} />
                                 </div>
                             </div>
-                            <Button className="mt-6">Save Changes</Button>
+                            <Button className="mt-6" onClick={handleSaveChanges}>
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4 mr-2" />
+                                        Save
+                                    </>
+                                )}
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
