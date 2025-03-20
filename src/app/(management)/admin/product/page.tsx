@@ -1,9 +1,12 @@
+import { getAllProducts } from '@/actions/product'
 import React from 'react'
+import ProductTable from './_components/product.table';
 
-const ProductPage = () => {
+const ProductPage = async () => {
+    const products = await getAllProducts();
     return (
         <div>
-            Product
+            <ProductTable data={products || []} />
         </div>
     )
 }
