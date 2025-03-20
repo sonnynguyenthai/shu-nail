@@ -17,11 +17,11 @@ const s3Client = new S3Client({
     }
 });
 
-const uploadFileToS3 = async (fileBuffer: Buffer, fileName: string) => {
+const uploadFileToS3 = async (fileBuffer: Buffer, target: string, fileName: string) => {
     const uniqueFileName = `${uuidv4()}-${fileName}`
     const params = {
         Bucket: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME,
-        Key: `uploads/avatars/${uniqueFileName}`,
+        Key: `uploads/${target}/${uniqueFileName}`,
         Body: fileBuffer,
         ContentType: "image/jpg"
     }
@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get("file");
+        const target = formData.get("target");
         if (!file) {
             return NextResponse.json({ error: 'File is required.' }, { status: 400 });
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid file type.' }, { status: 400 });
         }
         const buffer = Buffer.from(await file.arrayBuffer());
-        const fileName = await uploadFileToS3(buffer, file.name)
+        const fileName = await uploadFileToS3(buffer, target as string, file.name)
         const response = {
             statusCode: 201,
             message: "Upload File.",

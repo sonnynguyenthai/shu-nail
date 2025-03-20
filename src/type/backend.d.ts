@@ -19,4 +19,7 @@ declare global {
         headers?: any;
         nextOption?: any;
     }
+    enum ETarget {
+        AVATARS = "avatars",
+    }
 }

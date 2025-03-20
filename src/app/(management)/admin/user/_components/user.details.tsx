@@ -14,7 +14,8 @@ import { useEffect, useRef, useState } from "react";
 import { Role, User } from "@prisma/client";
 import { sendRequest, sendRequestFile } from "@/utils/api";
 import { toast } from "sonner";
-import { handleUploadAvatar } from "@/actions/file";
+import { handleUploadFile } from "@/actions/file";
+import Link from "next/link";
 
 export default function UserDetails({ user }: { user: User }) {
     const [userInfo, setUserInfo] = useState({
@@ -23,9 +24,10 @@ export default function UserDetails({ user }: { user: User }) {
         membershipLevel: "Gold",
         profileCompletion: 85,
     });
-    const [file, setFile] = useState<File | null>();
+    const [file, setFile] = useState<File | null | string>();
     const [isSaving, setIsSaving] = useState(false);
     const avatarRef = useRef<HTMLInputElement>(null);
+
     const bookings = [
         {
             id: "1234",
@@ -66,12 +68,19 @@ export default function UserDetails({ user }: { user: User }) {
         }
     ];
 
-    function handleFileChange(file: File) {
+    const handleFileChange = async (file: File) => {
         if (!file) {
             toast.error("Please select a file.");
             return;
         }
-        setFile(file);
+        const resUploadFile = await handleUploadFile("avatars", file);
+        if (!resUploadFile) {
+            setIsSaving(false);
+            toast.error("Failed to upload file. Please try again.");
+            return;
+        }
+        setUserInfo({ ...userInfo, imageUrl: resUploadFile });
+        setFile(resUploadFile);
     }
 
     const handleSaveChanges = async () => {
@@ -80,12 +89,7 @@ export default function UserDetails({ user }: { user: User }) {
             toast.error("Please select a file.");
             return;
         }
-        const resUploadFile = await handleUploadAvatar(file);
-        if (resUploadFile) {
-            setUserInfo({ ...userInfo, imageUrl: resUploadFile });
-        } else {
-            toast.error("Failed to upload file. Please try again.");
-        }
+
         const response = await sendRequest<IBackendRes<{ user: User }>>({
             method: "PUT",
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users`,
@@ -109,7 +113,9 @@ export default function UserDetails({ user }: { user: User }) {
                     <div className="flex items-center gap-6">
                         <div className="relative group">
                             <Avatar className="h-32 w-32 ring-4 ring-purple-50" >
-                                <AvatarImage src={userInfo.imageUrl} />
+                                <Link href={userInfo.imageUrl ?? "#"}>
+                                    <AvatarImage src={userInfo.imageUrl} />
+                                </Link>
                                 <AvatarFallback className="text-3xl">JS</AvatarFallback>
                             </Avatar>
                             <Button size="icon" variant="outline" onClick={() => avatarRef.current?.click()} className="absolute bottom-2 right-2 rounded-full h-8 w-8 bg-white group-hover:bg-gray-50">
@@ -160,10 +166,8 @@ export default function UserDetails({ user }: { user: User }) {
 
             <Tabs defaultValue="personal" className="space-y-6">
                 <TabsList className="bg-white rounded-lg shadow-sm p-1">
-                    <TabsTrigger value="personal">Personal Information</TabsTrigger>
-                    <TabsTrigger value="activity">Activity</TabsTrigger>
-                    <TabsTrigger value="security">Security</TabsTrigger>
-                    <TabsTrigger value="preferences">Preferences</TabsTrigger>
+                    <TabsTrigger value="personal" className="cursor-pointer">Personal Information</TabsTrigger>
+                    <TabsTrigger value="activity" className="cursor-pointer">Activity</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="personal">
@@ -241,11 +245,9 @@ export default function UserDetails({ user }: { user: User }) {
                                             <div className="text-right">
                                                 <p className="font-semibold">{booking.amount}</p>
                                                 <Badge
-                                                    variant={
-                                                        booking.status === "completed" ? "secondary" :
-                                                            booking.status === "upcoming" ? "default" : "outline"
-                                                    }
-                                                    className="mt-2"
+                                                    className={`mt-2 ${booking.status === "completed" ? "bg-green-700" :
+                                                        booking.status === "upcoming" ? "bg-red-700" : "outline"
+                                                        }`}
                                                 >
                                                     {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                                                 </Badge>
