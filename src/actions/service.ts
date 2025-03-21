@@ -14,3 +14,19 @@ export const getAllServices: () => Promise<Service[] | null> = async () => {
         throw new Error(error);
     }
 }
+
+
+export const getServiceById: (id: string) => Promise<Service | null> = async (id) => {
+    const user = await currentUser();
+    if (!user) {
+        return null;
+    }
+    try {
+        return db.service.findUnique({
+            where: { id }
+        });
+    } catch (error: any) {
+        console.error(error.message);
+        throw new Error(error);
+    }
+}

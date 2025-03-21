@@ -66,7 +66,7 @@ export function DataTable<T>({ data, columns, handleClickRow, filterableColumns 
 
     return (
         <div className="w-full">
-            <div className="flex items-center py-4 space-x-2">
+            <div className="flex items-center flex-wrap-reverse py-4 space-x-2">
                 {filterableColumns.map((columnKey) => (
                     <Input
                         key={columnKey}

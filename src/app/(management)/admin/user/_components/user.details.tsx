@@ -17,6 +17,10 @@ import { toast } from "sonner";
 import { handleUploadFile } from "@/actions/file";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { UserFormValues, userSchema } from "@/app/lib/schemas/user.schema";
+import { ServiceFormValues } from "@/app/lib/schemas/service.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 export default function UserDetails({ user }: { user: User }) {
     const [userInfo, setUserInfo] = useState({
@@ -25,10 +29,19 @@ export default function UserDetails({ user }: { user: User }) {
         membershipLevel: "Gold",
         profileCompletion: 85,
     });
-    const [file, setFile] = useState<File | null | string>();
+    const [file, setFile] = useState<File | null | string>(user.imageUrl);
     const [isSaving, setIsSaving] = useState(false);
     const avatarRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+    const { setValue, getValues, formState: { errors }, register, reset, handleSubmit } = useForm<UserFormValues>({
+        resolver: zodResolver(userSchema),
+        defaultValues: {
+            name: user.name,
+            email: user.email,
+            phone: user.phone || "",
+            imageUrl: user.imageUrl,
+        },
+    });
     const bookings = [
         {
             id: "1234",
@@ -80,21 +93,22 @@ export default function UserDetails({ user }: { user: User }) {
             toast.error("Failed to upload file. Please try again.");
             return;
         }
-        setUserInfo({ ...userInfo, imageUrl: resUploadFile });
         setFile(resUploadFile);
+        setValue("imageUrl", resUploadFile);
     }
 
-    const handleSaveChanges = async () => {
+    const handleSaveChanges = async (data: UserFormValues) => {
         setIsSaving(true);
         if (!file) {
             toast.error("Please select a file.");
+            setIsSaving(false);
             return;
         }
-
+        const updatedUser = { ...user, ...data }
         const response = await sendRequest<IBackendRes<{ user: User }>>({
             method: "PUT",
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users`,
-            body: userInfo
+            body: updatedUser
         })
         if (response.error) {
             toast.error("Failed to update profile. Please try again.");
@@ -107,7 +121,7 @@ export default function UserDetails({ user }: { user: User }) {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="">
             <Button variant="ghost" onClick={() => router.back()} >
                 <ArrowLeft className="w-8 h-6" />
             </Button>
@@ -117,8 +131,8 @@ export default function UserDetails({ user }: { user: User }) {
                     <div className="flex items-center gap-6">
                         <div className="relative group">
                             <Avatar className="h-32 w-32 ring-4 ring-purple-50" >
-                                <Link href={userInfo.imageUrl ?? "#"}>
-                                    <AvatarImage src={userInfo.imageUrl} />
+                                <Link href={getValues("imageUrl") ?? "#"}>
+                                    <AvatarImage src={getValues("imageUrl")} />
                                 </Link>
                                 <AvatarFallback className="text-3xl">JS</AvatarFallback>
                             </Avatar>
@@ -126,12 +140,18 @@ export default function UserDetails({ user }: { user: User }) {
                                 <Camera className="h-4 w-4" />
                             </Button>
                             <Input
+                                {...register("imageUrl")}
                                 ref={avatarRef}
                                 className="hidden"
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
                             />
+                            {errors.imageUrl && (
+                                <p className="text-sm text-red-500">
+                                    {errors.imageUrl?.message}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <div className="flex items-center gap-3">
@@ -184,15 +204,37 @@ export default function UserDetails({ user }: { user: User }) {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Full Name</label>
-                                    <Input value={userInfo?.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
+                                    <Input
+                                        {...register("name")}
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.name?.message}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <Input value={userInfo?.email} onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
+                                    <Input
+                                        {...register("email")}
+
+                                    />
+                                    {errors.email && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.email?.message}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Phone Number</label>
-                                    <Input value={userInfo?.phone || ""} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
+                                    <Input
+                                        {...register("phone")}
+                                    />
+                                    {errors.phone && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.phone?.message}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Role</label>
@@ -210,12 +252,8 @@ export default function UserDetails({ user }: { user: User }) {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Location</label>
-                                    <Input value={userInfo?.location} onChange={(e) => setUserInfo({ ...userInfo, location: e.target.value })} />
-                                </div>
                             </div>
-                            <Button className="mt-6" onClick={handleSaveChanges}>
+                            <Button className="mt-6" onClick={handleSubmit(handleSaveChanges)}>
                                 {isSaving ? (
                                     <>
                                         <Loader2 className="h-4 w-4 animate-spin" />

@@ -27,26 +27,34 @@ export async function GET() {
 // Create a new service (POST)
 export async function POST(request: Request) {
     try {
-        const { name, description, price, imageUrl, categories } = await request.json();
+        const { name, description, price, imageUrl, branchId } = await request.json();
 
+        // Step 1: Create the service
         const newService = await db.service.create({
             data: {
                 name,
                 description,
                 price,
-                imageUrl
-                // categories: {
-                //     connect: categories?.map((categoryId: string) => ({ id: categoryId })) // Associating categories
-                // }
-            }
+                imageUrl,
+                // Step 2: Link service to the branch using BranchService
+                branches: {
+                    create: {
+                        branch: {
+                            connect: {
+                                id: branchId,  // Connecting the service to the specified branch
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         const response: IBackendRes<{ service: Service }> = {
             statusCode: 201,
-            message: "Service created successfully.",
+            message: "Service created and linked to branch successfully.",
             data: {
-                service: newService
-            }
+                service: newService,
+            },
         };
         return NextResponse.json(response, { status: 201 });
     } catch (error) {

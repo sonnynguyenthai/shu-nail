@@ -9,18 +9,53 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Bell, Camera, CreditCard, LogOut, Pencil, Settings, Shield } from "lucide-react";
-import { useState } from "react";
-import { User } from "@prisma/client";
+import { ArrowLeft, Bell, Camera, CreditCard, Loader2, LogOut, Pencil, Save, Settings, Shield } from "lucide-react";
+import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
+import { Branch, Service, User } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { ServiceFormValues, serviceSchema } from "@/app/lib/schemas/service.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { handleUploadFile } from "@/actions/file";
+import { sendRequest } from "@/utils/api";
 
-export default function UserDetails({ user }: { user: User }) {
-    const [userInfo, setUserInfo] = useState({
-        ...user,
+export default function ServiceDetails({ service }: { service: Service }) {
+    const [serviceInfo, setServiceInfo] = useState({
+        ...service,
         location: "New York, USA",
         membershipLevel: "Gold",
         profileCompletion: 85,
     });
+    const serviceImageUrlRef = useRef<HTMLInputElement>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [branches, setBranches] = useState<Branch[]>([]);
 
+    const { setValue, getValues, formState: { errors }, register, reset, handleSubmit } = useForm<ServiceFormValues>({
+        resolver: zodResolver(serviceSchema),
+        defaultValues: {
+            name: service.name,
+            description: service.description,
+            price: service.price,
+            imageUrl: service.imageUrl || "",
+        },
+    });
+    const [file, setFile] = useState<File | null | string>(service.imageUrl);
+
+    const router = useRouter();
+    useEffect(() => {
+        const fetchBranches = async () => {
+            const response = await sendRequest<IBackendRes<{ branches: Branch[] }>>({
+                method: "GET",
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/branches`,
+            });
+            if (response.error) {
+                return;
+            }
+            setBranches(response?.data?.branches || []);
+        }
+        fetchBranches();
+    }, [])
     const bookings = [
         {
             id: "1234",
@@ -60,41 +95,69 @@ export default function UserDetails({ user }: { user: User }) {
             likes: 8
         }
     ];
+    const handleFileChange = async (file: File) => {
+        if (!file) {
+            toast.error("Please select a file.");
+            return;
+        }
+        const resUploadFile = await handleUploadFile("services", file);
+        if (!resUploadFile) {
+            setIsSaving(false);
+            toast.error("Failed to upload file. Please try again.");
+            return;
+        }
+        setFile(resUploadFile);
+        setValue("imageUrl", resUploadFile);
+    }
 
+    function handleSaveChanges(data: { name: string; description: string; price: number; imageUrl: string; }, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
+        throw new Error("Function not implemented.");
+    }
 
     return (
-        <div className="max-w-7xl mx-auto px-4">
+        <div>
             {/* Profile Header */}
+            <Button variant="ghost" onClick={() => router.back()} >
+                <ArrowLeft className="w-8 h-6" />
+            </Button>
             <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-center space-y-4 sm:space-y-0 sm:justify-between items-start flex-wrap ">
                     <div className="flex items-center gap-6">
                         <div className="relative group">
-                            <Avatar className="h-32 w-32 ring-4 ring-purple-50">
-                                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop" />
+                            <Avatar className="h-50 w-50 ring-4 ring-purple-50">
+                                <AvatarImage src={getValues("imageUrl")} />
                                 <AvatarFallback className="text-3xl">JS</AvatarFallback>
                             </Avatar>
-                            <Button size="icon" variant="outline" className="absolute bottom-2 right-2 rounded-full h-8 w-8 bg-white group-hover:bg-gray-50">
+                            <Button size="icon" variant="outline" onClick={() => serviceImageUrlRef.current?.click()} className="absolute bottom-2 right-2 rounded-full h-8 w-8 bg-white group-hover:bg-gray-50">
                                 <Camera className="h-4 w-4" />
                             </Button>
+                            <Input
+                                {...register("imageUrl")}
+                                ref={serviceImageUrlRef}
+                                className="hidden"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
+                            />
                         </div>
-                        <div>
+                        <div className="hidden sm:block">
                             <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-bold">{userInfo.name}</h1>
-                                <Badge variant="secondary" className="bg-purple-100 text-purple-700">{userInfo.membershipLevel}</Badge>
+                                <h1 className="text-3xl font-bold">{serviceInfo.name}</h1>
+                                <Badge variant="secondary" className="bg-purple-100 text-purple-700">{serviceInfo.membershipLevel}</Badge>
                             </div>
-                            <p className="text-gray-500 mt-1">{userInfo.location}</p>
+                            <p className="text-gray-500 mt-1">{serviceInfo.location}</p>
                             <div className="mt-4">
                                 <p className="text-sm text-gray-600 mb-2">Profile Completion</p>
                                 <div className="flex items-center gap-4">
-                                    <Progress value={userInfo.profileCompletion} className="w-48" />
-                                    <span className="text-sm font-medium">{userInfo.profileCompletion}%</span>
+                                    <Progress value={serviceInfo.profileCompletion} className="w-48" />
+                                    <span className="text-sm font-medium">{serviceInfo.profileCompletion}%</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive">Delete Account</Button>
+                            <Button variant="destructive">Delete Service</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -114,10 +177,8 @@ export default function UserDetails({ user }: { user: User }) {
 
             <Tabs defaultValue="personal" className="space-y-6">
                 <TabsList className="bg-white rounded-lg shadow-sm p-1">
-                    <TabsTrigger value="personal">Personal Information</TabsTrigger>
+                    <TabsTrigger value="personal">Service Information</TabsTrigger>
                     <TabsTrigger value="activity">Activity</TabsTrigger>
-                    <TabsTrigger value="security">Security</TabsTrigger>
-                    <TabsTrigger value="preferences">Preferences</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="personal">
@@ -127,22 +188,22 @@ export default function UserDetails({ user }: { user: User }) {
                             <p className="text-sm text-gray-500">Update your personal details and contact information</p>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Full Name</label>
-                                    <Input value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
+                                    <Input value={serviceInfo.name} onChange={(e) => setServiceInfo({ ...serviceInfo, name: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <Input value={userInfo.email} onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
+                                    <Input value={serviceInfo.description} onChange={(e) => setServiceInfo({ ...serviceInfo, description: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Phone Number</label>
-                                    <Input value={userInfo.phone || ""} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
+                                    <Input type="number" value={serviceInfo.price} onChange={(e) => setServiceInfo({ ...serviceInfo, price: Number(e.target.value) })} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Role</label>
-                                    <Select value={userInfo.role}>
+                                    <label className="text-sm font-medium">Branch Name</label>
+                                    <Select value={serviceInfo.name}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
@@ -155,21 +216,32 @@ export default function UserDetails({ user }: { user: User }) {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Location</label>
-                                    <Input value={userInfo.location} onChange={(e) => setUserInfo({ ...userInfo, location: e.target.value })} />
+                                    <Input value={serviceInfo.location} onChange={(e) => setServiceInfo({ ...serviceInfo, location: e.target.value })} />
                                 </div>
                             </div>
-                            <Button className="mt-6">Save Changes</Button>
+                            <Button className="mt-6" onClick={handleSubmit(handleSaveChanges)}>
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4 mr-2" />
+                                        Save
+                                    </>
+                                )}
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 <TabsContent value="activity">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid gird-cols-1 sm:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
                                 <h2 className="text-xl font-semibold">Recent Bookings</h2>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent >
                                 <div className="space-y-4">
                                     {bookings.map((booking) => (
                                         <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">

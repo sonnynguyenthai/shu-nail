@@ -14,22 +14,12 @@ export default function ServiceTable() {
     const router = useRouter();
     const [loading, setLoading] = React.useState(false)
     const [data, setData] = React.useState<Service[]>([])
+
     useEffect(() => {
-        const fetchServices = async () => {
-            setLoading(true)
-            const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
-                method: "GET",
-                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
-            })
-            if (response.error) {
-                toast.error("Failed to fetch services")
-                return
-            }
-            setData(response?.data?.services || [])
-            setLoading(false)
+        if (!loading) {
+            fetchServices()
         }
-        fetchServices()
-    }, [])
+    }, [loading])
     const columns: ColumnDef<Service>[] = [
         {
             accessorKey: "id",
@@ -102,9 +92,22 @@ export default function ServiceTable() {
         },
     ]
 
+
     const handleRowAction = (row: any) => {
         router.push(`service/${row.id}`)
     }
+    const fetchServices = async () => {
+        const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
+            method: "GET",
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
+        })
+        if (response.error) {
+            toast.error("Failed to fetch services")
+            return
+        }
+        setData(response?.data?.services || [])
+    }
+
     const handleDelete = async (id: string, e: React.MouseEvent<SVGSVGElement>) => {
         e.stopPropagation();
         setLoading(true);
@@ -118,6 +121,7 @@ export default function ServiceTable() {
             toast.error("Failed to delete service")
             return
         }
+        fetchServices()
         setLoading(false)
         toast.success("Service deleted successfully")
     }
@@ -125,7 +129,7 @@ export default function ServiceTable() {
     return (
         <>
             <div className="border-b">
-                <div className="max-w-7xl mx-auto px-8 py-12">
+                <div className="px-8 py-12">
                     <div className="flex items-center justify-between">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -143,7 +147,7 @@ export default function ServiceTable() {
                     </div>
                 </div>
             </div>
-            <div className="max-w-7xl mx-auto px-8 py-8">
+            <div className="px-8 py-8">
                 {
                     loading ? <Loader2 className="h-10 w-10 animate-spin" /> : (
                         <DataTable

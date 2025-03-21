@@ -27,15 +27,30 @@ import { use, useEffect, useRef, useState } from "react";
 import { ImagePlus, Plus } from "lucide-react";
 import { ServiceFormValues, serviceSchema } from "@/app/lib/schemas/service.schema";
 import { sendRequest } from "@/utils/api";
-import { Service } from "@prisma/client";
+import { Branch, Role, Service } from "@prisma/client";
 import { toast } from "sonner";
 import { handleUploadFile } from "@/actions/file";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MenuWithBadge from "@/components/menu.with.badge";
 export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoading: (loading: boolean) => void }) {
     const [open, setOpen] = useState(false);
     const [file, setFile] = useState<File | null | string>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const [branches, setBranches] = useState<Branch[]>([]);
+    useEffect(() => {
+        const fetchBranches = async () => {
+            const response = await sendRequest<IBackendRes<{ branches: Branch[] }>>({
+                method: "GET",
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/branches`,
+            });
+            if (response.error) {
+                return;
+            }
+            setBranches(response?.data?.branches || []);
+        }
+        fetchBranches();
+    }, [])
     const form = useForm<ServiceFormValues>({
         resolver: zodResolver(serviceSchema),
         defaultValues: {
@@ -43,6 +58,7 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
             description: "",
             price: 0,
             imageUrl: "",
+            branchId: branches[0]?.name || "",
         },
     });
     const handleFileChange = async (file: File) => {
@@ -91,7 +107,7 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
 
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[1000px] overflow-auto">
                 <DialogHeader>
                     <DialogTitle>Create New Service</DialogTitle>
                     <DialogDescription>
@@ -157,7 +173,31 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="branchId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Branch Name</FormLabel>
+                                    <Select
+                                        value={form.getValues("branchId")}
+                                        onValueChange={(value) => form.setValue("branchId", value)}
 
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {branches && branches.map((branch) => (
+                                                <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
+                                            ))}
+
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="imageUrl"
