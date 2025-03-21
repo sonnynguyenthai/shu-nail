@@ -27,8 +27,12 @@ export async function GET() {
 // Create a new service (POST)
 export async function POST(request: Request) {
     try {
-        const { name, description, price, imageUrl, branchId } = await request.json();
+        const { name, description, price, imageUrl, branchIds } = await request.json();
 
+        // Ensure branchIds is an array
+        if (!Array.isArray(branchIds) || branchIds.length === 0) {
+            return NextResponse.json({ error: "At least one branchId is required" }, { status: 400 });
+        }
         // Step 1: Create the service
         const newService = await db.service.create({
             data: {
@@ -36,38 +40,41 @@ export async function POST(request: Request) {
                 description,
                 price,
                 imageUrl,
-                // Step 2: Link service to the branch using BranchService
+                // Step 2: Link service to multiple branches
                 branches: {
-                    create: {
+                    create: branchIds.map((branchId) => ({
                         branch: {
-                            connect: {
-                                id: branchId,  // Connecting the service to the specified branch
-                            },
+                            connect: { id: branchId },
                         },
-                    },
+                    })),
                 },
             },
         });
 
         const response: IBackendRes<{ service: Service }> = {
             statusCode: 201,
-            message: "Service created and linked to branch successfully.",
-            data: {
-                service: newService,
-            },
+            message: "Service created and linked to branches successfully.",
+            data: { service: newService },
         };
+
         return NextResponse.json(response, { status: 201 });
+
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ error: 'Failed to create service' }, { status: 500 });
+        return NextResponse.json({ error: "Failed to create service" }, { status: 500 });
     }
 }
-
 // Update an existing service (PUT)
+
 export async function PUT(request: Request) {
     try {
-        const { id, name, description, price, imageUrl, categories } = await request.json();
+        const { id, name, description, price, imageUrl, branchIds } = await request.json();
 
+        await db.branchService.deleteMany({
+            where: {
+                serviceId: id,
+            },
+        });
         const updatedService = await db.service.update({
             where: { id },
             data: {
@@ -75,20 +82,22 @@ export async function PUT(request: Request) {
                 description,
                 price,
                 imageUrl,
-                categories: {
-                    connect: categories?.map((categoryId: string) => ({ id: categoryId })) // Updating categories
-                }
-            }
+                branches: {
+                    create: branchIds.map((branchId: string) => ({
+                        branch: {
+                            connect: { id: branchId },
+                        },
+                    })),
+                },
+            },
         });
 
-        const response: IBackendRes<{ service: Service }> = {
+        return NextResponse.json({
             statusCode: 200,
             message: "Service updated successfully.",
-            data: {
-                service: updatedService
-            }
-        };
-        return NextResponse.json(response, { status: 200 });
+            data: { service: updatedService },
+        });
+
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed to update service' }, { status: 500 });

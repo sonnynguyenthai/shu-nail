@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { handleUploadFile } from "@/actions/file";
 import { sendRequest } from "@/utils/api";
+import MenuWithBadge from "@/components/menu.with.badge";
 
 export default function ServiceDetails({ service }: { service: Service }) {
     const [serviceInfo, setServiceInfo] = useState({
@@ -30,6 +31,7 @@ export default function ServiceDetails({ service }: { service: Service }) {
     const serviceImageUrlRef = useRef<HTMLInputElement>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [branches, setBranches] = useState<Branch[]>([]);
+    const [selectedBranchNames, setSelectedBranchNames] = useState<string[]>([]);
 
     const { setValue, getValues, formState: { errors }, register, reset, handleSubmit } = useForm<ServiceFormValues>({
         resolver: zodResolver(serviceSchema),
@@ -45,17 +47,28 @@ export default function ServiceDetails({ service }: { service: Service }) {
     const router = useRouter();
     useEffect(() => {
         const fetchBranches = async () => {
-            const response = await sendRequest<IBackendRes<{ branches: Branch[] }>>({
-                method: "GET",
-                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/branches`,
-            });
-            if (response.error) {
+            const [resBranchesOfService, resBranches] = await Promise.all([
+                sendRequest<IBackendRes<{ branches: Branch[] }>>({
+                    method: "GET",
+                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/branches/get-by-service`,
+                    queryParams: { serviceId: service.id }
+                }),
+                sendRequest<IBackendRes<{ branches: Branch[] }>>({
+                    method: "GET",
+                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/branches`,
+                    queryParams: { serviceId: service.id }
+                })
+            ]);
+            if (resBranches.error || resBranchesOfService.error) {
+                toast.error("Failed to fetch branches. Please try again.");
                 return;
             }
-            setBranches(response?.data?.branches || []);
+            setSelectedBranchNames(resBranchesOfService?.data?.branches.map((branch) => branch.name) || []);
+            setBranches(resBranches?.data?.branches || []);
         }
         fetchBranches();
     }, [])
+
     const bookings = [
         {
             id: "1234",
@@ -110,8 +123,27 @@ export default function ServiceDetails({ service }: { service: Service }) {
         setValue("imageUrl", resUploadFile);
     }
 
-    function handleSaveChanges(data: { name: string; description: string; price: number; imageUrl: string; }, event?: BaseSyntheticEvent<object, any, any> | undefined): unknown {
-        throw new Error("Function not implemented.");
+    const handleSaveChanges = async (data: ServiceFormValues) => {
+        setIsSaving(true);
+        if (!file) {
+            toast.error("Please select a file.");
+            setIsSaving(false);
+            return;
+        }
+        const branchIds = branches.filter(branch => selectedBranchNames.includes(branch.name)).map(branch => branch.id);
+        const updateService = { ...service, ...data, imageUrl: file, branchIds }
+        const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
+            method: "PUT",
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
+            body: updateService
+        })
+        if (response.error) {
+            toast.error("Failed to update profile. Please try again.");
+            setIsSaving(false);
+            return;
+        }
+        toast.success("Profile updated successfully.");
+        setIsSaving(false);
     }
 
     return (
@@ -191,28 +223,23 @@ export default function ServiceDetails({ service }: { service: Service }) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Full Name</label>
-                                    <Input value={serviceInfo.name} onChange={(e) => setServiceInfo({ ...serviceInfo, name: e.target.value })} />
+                                    <Input {...register("name")} value={serviceInfo.name} onChange={(e) => setServiceInfo({ ...serviceInfo, name: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <Input value={serviceInfo.description} onChange={(e) => setServiceInfo({ ...serviceInfo, description: e.target.value })} />
+                                    <Input  {...register("description")} value={serviceInfo.description} onChange={(e) => setServiceInfo({ ...serviceInfo, description: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Phone Number</label>
-                                    <Input type="number" value={serviceInfo.price} onChange={(e) => setServiceInfo({ ...serviceInfo, price: Number(e.target.value) })} />
+                                    <Input {...register("price")} type="number" value={serviceInfo.price} onChange={(e) => setServiceInfo({ ...serviceInfo, price: Number(e.target.value) })} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Branch Name</label>
-                                    <Select value={serviceInfo.name}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="customer">Customer</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                            <SelectItem value="manager">Manager</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <MenuWithBadge
+                                        title={"Choose your branch"}
+                                        selectedItems={selectedBranchNames}
+                                        setSelectedItems={setSelectedBranchNames}
+                                        items={branches.map((branch) => branch.name)}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Location</label>

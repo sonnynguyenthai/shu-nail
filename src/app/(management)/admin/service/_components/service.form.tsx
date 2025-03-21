@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +38,7 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
     const [file, setFile] = useState<File | null | string>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [branches, setBranches] = useState<Branch[]>([]);
+    const [selectedBranchNames, setSelectedBranchNames] = useState<string[]>([]);
     useEffect(() => {
         const fetchBranches = async () => {
             const response = await sendRequest<IBackendRes<{ branches: Branch[] }>>({
@@ -58,7 +59,6 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
             description: "",
             price: 0,
             imageUrl: "",
-            branchId: branches[0]?.name || "",
         },
     });
     const handleFileChange = async (file: File) => {
@@ -74,14 +74,14 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
         setFile(resUploadFile);
         form.setValue("imageUrl", resUploadFile);
     }
-    useEffect(() => { console.log(file); }, [file]);
     async function onSubmit(data: ServiceFormValues) {
         setLoading(true);
+        const branchIds = branches.filter((branch) => selectedBranchNames.includes(branch.name)).map((branch) => branch.id);
         try {
             const response = await sendRequest<IBackendRes<{ service: Service }>>({
                 method: "POST",
                 url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
-                body: data,
+                body: { ...data, branchIds },
             })
             if (response.data) {
                 toast.success("Service created successfully");
@@ -104,7 +104,6 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
                     <p className="hidden sm:block">
                         Add New Service
                     </p>
-
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[1000px] overflow-auto">
@@ -174,27 +173,16 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
                             )}
                         />
                         <FormField
-                            control={form.control}
-                            name="branchId"
+                            name="branches"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Branch Name</FormLabel>
-                                    <Select
-                                        value={form.getValues("branchId")}
-                                        onValueChange={(value) => form.setValue("branchId", value)}
-
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {branches && branches.map((branch) => (
-                                                <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
-                                            ))}
-
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
+                                    <MenuWithBadge
+                                        title={"Choose your branch"}
+                                        selectedItems={selectedBranchNames}
+                                        setSelectedItems={setSelectedBranchNames}
+                                        items={branches.map((branch) => branch.name)}
+                                    />
+                                    <FormDescription>Set branches for your service</FormDescription>
                                 </FormItem>
                             )}
                         />
