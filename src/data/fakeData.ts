@@ -7,6 +7,7 @@ export const branches: Branch[] = [
         address: "120-200 Rosamond Rd, Maribyrnong VIC 3032",
         phone: "+1 (123) 456-7890",
         imageUrl: "https://i.pinimg.com/originals/f9/5b/a6/f95ba60f32ab55cfd4c5c3b010fc8c39.jpg",
+        active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -16,6 +17,7 @@ export const branches: Branch[] = [
         address: "shop T127/399 Melton Hwy, Taylors Lakes VIC 3038",
         phone: "+1 (987) 654-3210",
         imageUrl: "https://www.crestproperty.net.au/wp-content/uploads/2021/07/Watergardens-Town-Centre.jpg",
+        active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
     }

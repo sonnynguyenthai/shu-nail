@@ -1,9 +1,10 @@
 import React from 'react'
+import CategoryTable from './_components/category.table'
 
 const CategoryPage = () => {
     return (
         <div>
-            Category
+            <CategoryTable />
         </div>
     )
 }

@@ -1,27 +1,27 @@
 "use client"
 import { DataTable } from "@/components/data.table"
 import { Button } from "@/components/ui/button"
-import { Service } from "@prisma/client"
+import { Category, Service } from "@prisma/client"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, Eye, FilePenLine, Loader2, Settings2, Sparkles, Trash } from "lucide-react"
+import { ArrowUpDown, Eye, Loader2, Settings2, Sparkles, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useEffect } from "react"
 import { sendRequest } from "@/utils/api"
 import { toast } from "sonner"
 import { AlertDialogHeader, AlertDialogFooter, AlertDialogTrigger, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { ServiceForm } from "../../service/_components/service.form"
+import { CategoryForm } from "./category.form"
 
-export default function ServiceTable() {
+export default function CategoryTable() {
     const router = useRouter();
     const [loading, setLoading] = React.useState(false)
-    const [data, setData] = React.useState<Service[]>([])
+    const [data, setData] = React.useState<(Category & { serviceName: string })[]>([])
 
     useEffect(() => {
         if (!loading) {
             fetchServices()
         }
     }, [loading])
-    const columns: ColumnDef<Service>[] = [
+    const columns: ColumnDef<Category>[] = [
         {
             accessorKey: "id",
             header: "ID",
@@ -41,21 +41,41 @@ export default function ServiceTable() {
             cell: ({ row }) => <div>{row.getValue("name")}</div>,
         },
         {
-            accessorKey: "price",
+            accessorKey: "description",
+            header: ({ column }) => (
+                <Button
+                    variant="ghost"
+                >
+                    Description
+                    <ArrowUpDown />
+                </Button>
+            ),
+            cell: ({ row }) => <div className="truncate">{row.getValue("description")}</div>,
+        },
+        {
+            accessorKey: "serviceName",
             header: ({ column }) => (
                 <Button
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Price
+                    Service Name
                     <ArrowUpDown />
                 </Button>
             ),
-            cell: ({ row }) => <div>${row.getValue("price")}</div>,
+            cell: ({ row }) => <div className="truncate">{row.getValue("serviceName")}</div>,
         },
         {
             accessorKey: "createdAt",
-            header: "Created At",
+            header: ({ column }) => (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    CreatedAt
+                    <ArrowUpDown />
+                </Button>
+            ),
             cell: ({ row }) => {
                 const [createdAt, setCreatedAt] = React.useState<string>("")
 
@@ -69,7 +89,15 @@ export default function ServiceTable() {
         },
         {
             accessorKey: "updatedAt",
-            header: "Updated At",
+            header: ({ column }) => (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    UpdatedAt
+                    <ArrowUpDown />
+                </Button>
+            ),
             cell: ({ row }) => {
                 const [updatedAt, setUpdatedAt] = React.useState<string>("")
 
@@ -118,15 +146,28 @@ export default function ServiceTable() {
         router.push(`service/${id}`)
     }
     const fetchServices = async () => {
-        const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
+        const resCategories = await sendRequest<IBackendRes<{ categories: Category[] }>>({
             method: "GET",
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`,
         })
-        if (response.error) {
-            toast.error("Failed to fetch services")
+        if (resCategories.error) {
+            toast.error(resCategories.error)
             return
         }
-        setData(response?.data?.services || [])
+        const fetchedCategories = resCategories?.data?.categories;
+        const categories = await Promise.all(fetchedCategories?.map(async (category): Promise<Category & { serviceName: string }> => {
+            const resService = await sendRequest<IBackendRes<{ service: Service }>>({
+                method: "GET",
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services/${category?.serviceId}`,
+            })
+            if (resService.error) {
+                toast.error(resService.error)
+                return { ...category, serviceName: "" };
+            }
+            const serviceName = resService?.data?.service?.name || "";
+            return { ...category, serviceName }
+        }) || [])
+        setData(categories)
     }
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -154,16 +195,16 @@ export default function ServiceTable() {
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-6 w-6 text-primary" />
-                                <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold tracking-tight">Services</h1>
+                                <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold tracking-tight">Categories</h1>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Settings2 className="h-4 w-4 text-muted-foreground" />
                                 <p className="text-muted-foreground text-lg">
-                                    Manage and organize your service offerings
+                                    Manage and organize your categories offerings
                                 </p>
                             </div>
                         </div>
-                        <ServiceForm loading={loading} setLoading={setLoading} />
+                        <CategoryForm loading={loading} setLoading={setLoading} />
                     </div>
                 </div>
             </div>
@@ -173,7 +214,7 @@ export default function ServiceTable() {
                         <DataTable
                             data={data}
                             columns={columns}
-                            filterableColumns={["name", "price"]}
+                            filterableColumns={["name", "serviceName"]}
                         />
                     )
                 }

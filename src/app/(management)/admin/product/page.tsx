@@ -6,7 +6,7 @@ const ProductPage = async () => {
     const products = await getAllProducts();
     return (
         <div>
-            <ProductTable data={products || []} />
+            <ProductTable />
         </div>
     )
 }

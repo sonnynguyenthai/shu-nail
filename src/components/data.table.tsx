@@ -133,7 +133,6 @@ export function DataTable<T>({ data, columns, handleClickRow = (row) => { }, fil
                                         key={row.id}
                                         data-state={row.getIsSelected() && "selected"}
                                         onClick={() => handleClickRow(row.original)}
-                                        className="cursor-pointer"
                                     >
 
                                         {row.getVisibleCells().map((cell) => {

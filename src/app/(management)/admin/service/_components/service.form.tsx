@@ -76,6 +76,11 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
     }
     async function onSubmit(data: ServiceFormValues) {
         setLoading(true);
+        if (selectedBranchNames.length === 0) {
+            toast.error("Please select the branch")
+            setLoading(false)
+            return;
+        }
         const branchIds = branches.filter((branch) => selectedBranchNames.includes(branch.name)).map((branch) => branch.id);
         try {
             const response = await sendRequest<IBackendRes<{ service: Service }>>({
@@ -87,6 +92,7 @@ export function ServiceForm({ loading, setLoading }: { loading: boolean, setLoad
                 toast.success("Service created successfully");
             }
             form.reset();
+            setSelectedBranchNames([]);
             setOpen(false);
         } catch (error) {
             toast.error("Failed to create service");
