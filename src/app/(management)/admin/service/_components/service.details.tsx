@@ -248,6 +248,7 @@ export default function ServiceDetails({ service }: { service: Service }) {
                                 <div className="space-y-2 flex items-start gap-4">
                                     <label className="text-sm font-medium">Active Service</label>
                                     <Switch
+                                        className="data-[state=checked]:bg-green-700"
                                         checked={active}
                                         onCheckedChange={(checked) => setActive(checked)}
                                     />

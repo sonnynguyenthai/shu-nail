@@ -35,11 +35,11 @@ import {
 interface DataTableProps<T> {
     data: T[]
     columns: ColumnDef<T>[]
-    handleClickRow: (row: T) => void
+    handleClickRow?: (row: T) => void
     filterableColumns?: string[]
 }
 
-export function DataTable<T>({ data, columns, handleClickRow, filterableColumns = [] }: DataTableProps<T>) {
+export function DataTable<T>({ data, columns, handleClickRow = (row) => { }, filterableColumns = [] }: DataTableProps<T>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})

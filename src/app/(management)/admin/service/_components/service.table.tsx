@@ -3,9 +3,9 @@ import { DataTable } from "@/components/data.table"
 import { Button } from "@/components/ui/button"
 import { Service } from "@prisma/client"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, FilePenLine, Loader2, Settings2, Sparkles, Trash } from "lucide-react"
+import { ArrowUpDown, Eye, FilePenLine, Loader2, Settings2, Sparkles, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { use, useEffect } from "react"
+import React, { useEffect } from "react"
 import { ServiceForm } from "./service.form"
 import { sendRequest } from "@/utils/api"
 import { toast } from "sonner"
@@ -85,9 +85,9 @@ export default function ServiceTable() {
             id: "actions",
             enableHiding: false,
             cell: ({ row }) => (
-                <div className="flex space-x-2">
-                    <FilePenLine className="cursor-pointer hover:text-[blue]" />
-                    <AlertDialog >
+                <div className="flex space-x-1">
+                    <Eye className="cursor-pointer hover:text-[blue]" onClick={() => handleViewDetails(row.original.id)} />
+                    <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Trash className="cursor-pointer hover:text-[red]" onClick={(e) => {
                                 e.stopPropagation();
@@ -98,12 +98,14 @@ export default function ServiceTable() {
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     This action cannot be undone. This will permanently delete your
-                                    account and remove your data from our servers.
+                                    service and remove your data from our servers.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction className="bg-red-500" onClick={(e) => handleDelete(row.original?.id, e)}>Remove</AlertDialogAction>
+                                <AlertDialogCancel onClick={(e) => {
+                                    e.stopPropagation();
+                                }}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={(e) => handleDelete(row.original?.id, e)}>Remove</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -112,9 +114,8 @@ export default function ServiceTable() {
         },
     ]
 
-
-    const handleRowAction = (row: any) => {
-        router.push(`service/${row.id}`)
+    const handleViewDetails = (id: string) => {
+        router.push(`service/${id}`)
     }
     const fetchServices = async () => {
         const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
@@ -129,7 +130,6 @@ export default function ServiceTable() {
     }
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
         setLoading(true);
         const response = await sendRequest<IBackendRes<null>>({
             method: "DELETE",
@@ -173,7 +173,6 @@ export default function ServiceTable() {
                         <DataTable
                             data={data}
                             columns={columns}
-                            handleClickRow={handleRowAction}
                             filterableColumns={["name", "price"]}
                         />
                     )

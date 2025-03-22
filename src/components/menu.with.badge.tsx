@@ -30,7 +30,7 @@ const MenuWithBadge = ({
 
     return (
         <div>
-            <div className='flex items-center mb-2 space-x-2'>
+            <div className='flex items-center mb-1 space-x-2'>
                 <label className="text-sm font-medium">{title}</label>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
@@ -51,10 +51,10 @@ const MenuWithBadge = ({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <Card className='p-4'>
+            <Card className='p-2 rounded-lg'>
                 <div className='flex flex-wrap gap-2'>
                     {selectedItems.map((item) => (
-                        <Badge key={item} variant="outline" className='flex items-center space-x-1'>
+                        <Badge key={item} variant="outline" className='flex py-0 items-center space-x-1'>
                             {item}
                             <Button
                                 size="icon"
@@ -65,6 +65,7 @@ const MenuWithBadge = ({
                                 <X className="w-3 h-3" />
                             </Button>
                         </Badge>
+
                     ))}
                 </div>
             </Card>
