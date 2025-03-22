@@ -5,12 +5,17 @@ import { NextResponse } from "next/server";
 // Get all services
 export async function GET() {
     try {
-        const services = await db.service.findMany();
+        const services = await db.service.findMany({
+            orderBy: {
+                updatedAt: 'desc' // Sorting by latest first
+            }
+        });
         const response: IBackendRes<{ services: Service[] }> = {
             statusCode: 200,
             message: "Fetched all services.",
             data: {
                 services
+
             }
         };
 
@@ -68,7 +73,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        const { id, name, description, price, imageUrl, branchIds } = await request.json();
+        const { id, name, active, description, price, imageUrl, branchIds } = await request.json();
 
         await db.branchService.deleteMany({
             where: {
@@ -82,6 +87,7 @@ export async function PUT(request: Request) {
                 description,
                 price,
                 imageUrl,
+                active,
                 branches: {
                     create: branchIds.map((branchId: string) => ({
                         branch: {
@@ -108,6 +114,11 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
     try {
         const { id } = await request.json();
+        await db.branchService.deleteMany({
+            where: {
+                serviceId: id,
+            },
+        });
         await db.service.delete({ where: { id } });
         const response: IBackendRes<null> = {
             statusCode: 200,

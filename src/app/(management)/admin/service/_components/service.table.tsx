@@ -9,6 +9,7 @@ import React, { use, useEffect } from "react"
 import { ServiceForm } from "./service.form"
 import { sendRequest } from "@/utils/api"
 import { toast } from "sonner"
+import { AlertDialogHeader, AlertDialogFooter, AlertDialogTrigger, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 export default function ServiceTable() {
     const router = useRouter();
@@ -86,7 +87,26 @@ export default function ServiceTable() {
             cell: ({ row }) => (
                 <div className="flex space-x-2">
                     <FilePenLine className="cursor-pointer hover:text-[blue]" />
-                    <Trash className="cursor-pointer hover:text-[red]" onClick={(e) => handleDelete(row.original.id, e)} />
+                    <AlertDialog >
+                        <AlertDialogTrigger asChild>
+                            <Trash className="cursor-pointer hover:text-[red]" onClick={(e) => {
+                                e.stopPropagation();
+                            }} />
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete your
+                                    account and remove your data from our servers.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction className="bg-red-500" onClick={(e) => handleDelete(row.original?.id, e)}>Remove</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             ),
         },
@@ -108,7 +128,7 @@ export default function ServiceTable() {
         setData(response?.data?.services || [])
     }
 
-    const handleDelete = async (id: string, e: React.MouseEvent<SVGSVGElement>) => {
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setLoading(true);
         const response = await sendRequest<IBackendRes<null>>({

@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,8 @@ import { toast } from "sonner";
 import { handleUploadFile } from "@/actions/file";
 import { sendRequest } from "@/utils/api";
 import MenuWithBadge from "@/components/menu.with.badge";
+import { Switch } from "@/components/ui/switch";
+import { get } from "http";
 
 export default function ServiceDetails({ service }: { service: Service }) {
     const [serviceInfo, setServiceInfo] = useState({
@@ -32,8 +33,8 @@ export default function ServiceDetails({ service }: { service: Service }) {
     const [isSaving, setIsSaving] = useState(false);
     const [branches, setBranches] = useState<Branch[]>([]);
     const [selectedBranchNames, setSelectedBranchNames] = useState<string[]>([]);
-
-    const { setValue, getValues, formState: { errors }, register, reset, handleSubmit } = useForm<ServiceFormValues>({
+    const [active, setActive] = useState<boolean>(service.active)
+    const { setValue, getValues, formState: { errors }, register, handleSubmit } = useForm<ServiceFormValues>({
         resolver: zodResolver(serviceSchema),
         defaultValues: {
             name: service.name,
@@ -42,6 +43,7 @@ export default function ServiceDetails({ service }: { service: Service }) {
             imageUrl: service.imageUrl || "",
         },
     });
+
     const [file, setFile] = useState<File | null | string>(service.imageUrl);
 
     const router = useRouter();
@@ -131,7 +133,7 @@ export default function ServiceDetails({ service }: { service: Service }) {
             return;
         }
         const branchIds = branches.filter(branch => selectedBranchNames.includes(branch.name)).map(branch => branch.id);
-        const updateService = { ...service, ...data, imageUrl: file, branchIds }
+        const updateService = { ...service, ...data, imageUrl: file, branchIds, active }
         const response = await sendRequest<IBackendRes<{ services: Service[] }>>({
             method: "PUT",
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
@@ -223,16 +225,18 @@ export default function ServiceDetails({ service }: { service: Service }) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Full Name</label>
-                                    <Input {...register("name")} value={serviceInfo.name} onChange={(e) => setServiceInfo({ ...serviceInfo, name: e.target.value })} />
+                                    <Input {...register("name")} value={serviceInfo.name} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Email</label>
-                                    <Input  {...register("description")} value={serviceInfo.description} onChange={(e) => setServiceInfo({ ...serviceInfo, description: e.target.value })} />
+                                    <Input  {...register("description")} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Phone Number</label>
-                                    <Input {...register("price")} type="number" value={serviceInfo.price} onChange={(e) => setServiceInfo({ ...serviceInfo, price: Number(e.target.value) })} />
+                                    <label className="text-sm font-medium">Price</label>
+                                    <Input {...register("price")} type="number" />
                                 </div>
+
+
                                 <div className="space-y-2">
                                     <MenuWithBadge
                                         title={"Choose your branch"}
@@ -241,9 +245,12 @@ export default function ServiceDetails({ service }: { service: Service }) {
                                         items={branches.map((branch) => branch.name)}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Location</label>
-                                    <Input value={serviceInfo.location} onChange={(e) => setServiceInfo({ ...serviceInfo, location: e.target.value })} />
+                                <div className="space-y-2 flex items-start gap-4">
+                                    <label className="text-sm font-medium">Active Service</label>
+                                    <Switch
+                                        checked={active}
+                                        onCheckedChange={(checked) => setActive(checked)}
+                                    />
                                 </div>
                             </div>
                             <Button className="mt-6" onClick={handleSubmit(handleSaveChanges)}>

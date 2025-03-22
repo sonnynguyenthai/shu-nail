@@ -21,12 +21,6 @@ model User {
   updatedAt   DateTime  @updatedAt
 }
 
-enum Role {
-  CUSTOMER
-  EMPLOYEE
-  ADMIN
-}
-
 model Service {
   id          String          @id @default(uuid())
   name        String
@@ -39,6 +33,7 @@ model Service {
   reviews     Review[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  active      Boolean         @default(true) // Active status of the service
 }
 
 model Branch {
@@ -51,6 +46,7 @@ model Branch {
   bookings  Booking[]
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
+  active    Boolean         @default(true) // Active status of the branch
 }
 
 model BranchService {
@@ -73,6 +69,7 @@ model Category {
   serviceId   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  active      Boolean   @default(true) // Active status of the category
 }
 
 model Booking {
@@ -117,12 +114,6 @@ model Product {
   updatedAt      DateTime         @updatedAt
 }
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELED
-}
-
 model Payment {
   id        String        @id @default(uuid())
   booking   Booking       @relation(fields: [bookingId], references: [id])
@@ -131,12 +122,6 @@ model Payment {
   status    PaymentStatus @default(PENDING)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
 }
 
 model Review {
@@ -148,4 +133,22 @@ model Review {
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
+}
+
+enum Role {
+  CUSTOMER
+  EMPLOYEE
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
